@@ -75,7 +75,6 @@ const cambiarTurno = () => {
     if (isCheckmate(turnoActual)) {
         alert(`¡Jaque mate! El jugador ${turnoActual === 'blanco' ? 'negro' : 'blanco'} ha ganado.`);
         reiniciarJuego();
-        // Detener el juego o reiniciarlo según lo que prefieras hacer aquí
     } else if (isInCheck(turnoActual)) {
         alert(`¡Jaque! El rey ${turnoActual === 'blanco' ? 'blanco' : 'negro'} está en jaque.`);
     }
@@ -108,6 +107,7 @@ const isInCheck = (color) => {
 
     return false; // El rey no está en jaque
 };
+
 
 const isCheckmate = (color) => {
     if (!isInCheck(color)) {
@@ -168,6 +168,7 @@ const renderBoard = (movimientosPosibles = []) => {
         }
     }
 };
+
 
 const getPossibleMoves = (x, y) => {
     const pieza = boardMatrix[x][y];
@@ -356,48 +357,81 @@ const getSafeKingMoves = (kingPosition) => {
 };
 
 // Modificar la detección de click para permitir solo movimientos seguros
+
+// Modificar la detección de click para permitir solo movimientos seguros
 $canvas.addEventListener('click', (event) => {
     const x = Math.floor(event.offsetX / ANCHO_CELDA);
     const y = Math.floor(event.offsetY / ALTURA_CELDA);
 
     const piezaSeleccionada = boardMatrix[x][y];
 
-    if (piezaSeleccionada && puedeMoverPieza(piezaSeleccionada)) {
-        // Si el rey está en jaque, solo puede moverse a lugares seguros
-        if (isInCheck(turnoActual) && piezaSeleccionada.type === piezas.rey) {
+    if (isInCheck(turnoActual)) {
+        // Si está en jaque, solo puede mover el rey
+        if (piezaSeleccionada && piezaSeleccionada.type === piezas.rey && puedeMoverPieza(piezaSeleccionada)) {
             const movimientosSeguros = getSafeKingMoves({ x, y });
             renderBoard(movimientosSeguros); // Resaltar solo movimientos seguros
-        } else {
-            const movimientosPosibles = getPossibleMoves(x, y);
-            renderBoard(movimientosPosibles); // Resaltar movimientos posibles normales
-        }
-        selectedPiece = piezaSeleccionada;
-        selectedPosition = { x, y };
-    } else if (selectedPiece) {
-        const newPosX = x;
-        const newPosY = y;
+            selectedPiece = piezaSeleccionada;
+            selectedPosition = { x, y };
+        } else if (piezaSeleccionada && puedeMoverPieza(piezaSeleccionada)) {
+            // Si intenta mover otra pieza mientras está en jaque
+            alert("Primero debes salir del jaque moviendo tu rey.");
+        } else if (selectedPiece) {
+            // Manejo de movimiento del rey
+            const newPosX = x;
+            const newPosY = y;
 
-        const validMove = getPossibleMoves(selectedPosition.x, selectedPosition.y).some(move => move.x === newPosX && move.y === newPosY);
+            const validMove = getSafeKingMoves(selectedPosition).some(move => move.x === newPosX && move.y === newPosY);
 
-        if (validMove) {
-            const piezaCapturada = boardMatrix[newPosX][newPosY];
-            if (piezaCapturada) {
-                agregarPiezaCapturada(piezaCapturada);
+            if (validMove) {
+                const piezaCapturada = boardMatrix[newPosX][newPosY];
+                if (piezaCapturada) {
+                    agregarPiezaCapturada(piezaCapturada);
+                }
+
+                boardMatrix[newPosX][newPosY] = selectedPiece;
+                boardMatrix[selectedPosition.x][selectedPosition.y] = null;
+                cambiarTurno();
+                alert("El rey ha salido del jaque.");
             }
 
-            boardMatrix[newPosX][newPosY] = selectedPiece;
-            boardMatrix[selectedPosition.x][selectedPosition.y] = null;
-            cambiarTurno();
+            selectedPiece = null;
+            selectedPosition = null;
+            renderBoard(); // Redibuja el tablero
+        } else {
+            renderBoard(); // Redibuja el tablero si no se selecciona ninguna pieza
         }
-
-        selectedPiece = null;
-        selectedPosition = null;
-        renderBoard(); // Redibuja el tablero
     } else {
-        renderBoard(); // Redibuja el tablero si no se selecciona ninguna pieza
+        // Si no está en jaque, manejar el movimiento normalmente
+        if (piezaSeleccionada && puedeMoverPieza(piezaSeleccionada)) {
+            const movimientosPosibles = getPossibleMoves(x, y);
+            renderBoard(movimientosPosibles); // Resaltar movimientos posibles normales
+            selectedPiece = piezaSeleccionada;
+            selectedPosition = { x, y };
+        } else if (selectedPiece) {
+            const newPosX = x;
+            const newPosY = y;
+
+            const validMove = getPossibleMoves(selectedPosition.x, selectedPosition.y).some(move => move.x === newPosX && move.y === newPosY);
+
+            if (validMove) {
+                const piezaCapturada = boardMatrix[newPosX][newPosY];
+                if (piezaCapturada) {
+                    agregarPiezaCapturada(piezaCapturada);
+                }
+
+                boardMatrix[newPosX][newPosY] = selectedPiece;
+                boardMatrix[selectedPosition.x][selectedPosition.y] = null;
+                cambiarTurno();
+            }
+
+            selectedPiece = null;
+            selectedPosition = null;
+            renderBoard(); // Redibuja el tablero
+        } else {
+            renderBoard(); // Redibuja el tablero si no se selecciona ninguna pieza
+        }
     }
 });
-
 
 
 const reiniciarJuego = () => {
