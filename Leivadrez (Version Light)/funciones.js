@@ -75,6 +75,7 @@ const cambiarTurno = () => {
     if (isCheckmate(turnoActual)) {
         alert(`¡Jaque mate! El jugador ${turnoActual === 'blanco' ? 'negro' : 'blanco'} ha ganado.`);
         reiniciarJuego();
+        // Detener el juego o reiniciarlo según lo que prefieras hacer aquí
     } else if (isInCheck(turnoActual)) {
         alert(`¡Jaque! El rey ${turnoActual === 'blanco' ? 'blanco' : 'negro'} está en jaque.`);
     }
@@ -107,7 +108,6 @@ const isInCheck = (color) => {
 
     return false; // El rey no está en jaque
 };
-
 
 const isCheckmate = (color) => {
     if (!isInCheck(color)) {
@@ -168,6 +168,7 @@ const renderBoard = (movimientosPosibles = []) => {
         }
     }
 };
+
 
 
 const getPossibleMoves = (x, y) => {
@@ -325,6 +326,8 @@ const getPossibleMoves = (x, y) => {
         let selectedPiece = null;
 let selectedPosition = null;
 
+
+
 const agregarPiezaCapturada = (pieza) => {
     const contenedor = pieza.color === piezaTema.light ? document.getElementById('piezasNegras') : document.getElementById('piezasBlancas');
     const span = document.createElement('span');
@@ -355,8 +358,6 @@ const getSafeKingMoves = (kingPosition) => {
 
     return safeMoves;
 };
-
-// Modificar la detección de click para permitir solo movimientos seguros
 
 // Modificar la detección de click para permitir solo movimientos seguros
 $canvas.addEventListener('click', (event) => {
@@ -432,6 +433,7 @@ $canvas.addEventListener('click', (event) => {
         }
     }
 });
+
 
 
 const reiniciarJuego = () => {
